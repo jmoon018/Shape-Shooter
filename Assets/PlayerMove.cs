@@ -11,6 +11,19 @@ public class PlayerMove : NetworkBehaviour {
 	
 	}
 	
+	void updateRotation() {
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
+		Physics.Raycast(ray, out hit);
+		if (hit.collider.gameObject.tag == "Terrain")
+		{
+			Vector3 __target = hit.point;
+			//__target.y += 0.5f; // a little above ground
+			//transform.localRotation = new Quaternion(0, 0, __target.z, 1);
+			transform.LookAt(__target);
+			Debug.Log("rotating around ... " + __target);
+		}
+	}
 	// Update is called once per frame
 	void Update () { 
 
@@ -26,7 +39,9 @@ public class PlayerMove : NetworkBehaviour {
 			CmdFire();
 		}
 
-		transform.Translate(x, z, z);
+	//	transform.Translate(x, z, 0);
+		transform.position = new Vector3(transform.position.x + x, transform.position.y + z, 0);
+		updateRotation();
 	}
 
 	public override void OnStartLocalPlayer()
@@ -41,11 +56,11 @@ public class PlayerMove : NetworkBehaviour {
 		// create the bullet object from the bullet prefab
 		var bullet = (GameObject)Instantiate(
 			bulletPrefab,
-			transform.position - transform.forward,
+			transform.position + transform.forward,
 			Quaternion.identity);
 
 		// make the bullet move away in front of the player
-		bullet.GetComponent<Rigidbody>().velocity = new Vector3(1, 1, 0) * 4;//-transform.forward * 40;
+		bullet.GetComponent<Rigidbody>().velocity = transform.forward * 10;//new Vector3(1, 1, 0) * 4;//-transform.forward * 40;
 
 		// spawn the bullet on the clients
 		NetworkServer.Spawn(bullet);
